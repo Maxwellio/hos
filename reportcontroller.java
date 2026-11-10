@@ -8,14 +8,15 @@ import com.example.core.service.NarService;
 import com.example.core.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.File;
 import java.util.List;
 
 @RestController
@@ -29,23 +30,28 @@ public class ReportController {
     private final BrigadeMapper brigadeMapper;
     private final BrigadeService brigadeService;
     @GetMapping("/downtime")
-    public ResponseEntity<byte[]> generateProstoiReport(
-            @ModelAttribute DowntimeReportRequest value
-    ) throws IOException {
-        String filename = "downtime_report.xls";
-        byte[] body;
-        try (Workbook workbook = reportService.generateDowntimeReportNew(value.getZeh(), value.getDateBegin(), value.getDateEnd());
-             ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
-            workbook.write(buffer);
-            body = buffer.toByteArray();
+    public ResponseEntity<String> generateProstoiReport(@ModelAttribute DowntimeReportRequest value) {
+        String taskId = reportService.startDowntimeReport(value.getZeh(), value.getDateBegin(), value.getDateEnd());
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(taskId);
+    }
+
+    @GetMapping("/downtime/status/{taskId}")
+    public ResponseEntity<String> downtimeStatus(@PathVariable String taskId) {
+        return ResponseEntity.ok(reportService.getDowntimeStatus(taskId));
+    }
+
+    @GetMapping("/downtime/download/{taskId}")
+    public ResponseEntity<FileSystemResource> downloadDowntime(@PathVariable String taskId) {
+        File file = reportService.getDowntimeFile(taskId);
+        if (file == null) {
+            return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\"" + filename + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\"downtime_report.xls\"")
                 .header("Access-Control-Expose-Headers", "Content-Disposition")
-                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=3600")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .contentLength(body.length)
-                .body(body);
+                .contentLength(file.length())
+                .body(new FileSystemResource(file));
     }
 
     @GetMapping("/normz")

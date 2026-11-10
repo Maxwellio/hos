@@ -22,8 +22,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.time.temporal.TemporalAdjusters;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +41,11 @@ public class ReportService {
     private final Map<String, String> taskStatuses = new ConcurrentHashMap<>();
     // Папка на сервере, где будут временно лежать готовые файлы
     private final String STORAGE_DIR = System.getProperty("java.io.tmpdir") + "/excel_reports/";
+    private static final ExecutorService REPORT_EXECUTOR = Executors.newFixedThreadPool(2, runnable -> {
+        Thread thread = new Thread(runnable, "downtime-report");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public List<SelectDto> getEquipmentList(){
         List<SelectDto> equipmentList =  new ArrayList<>();
@@ -1804,7 +1814,59 @@ public class ReportService {
         }
     }
 
+    public String startDowntimeReport(Integer zeh, LocalDateTime dateBegin, LocalDateTime dateEnd) {
+        String taskId = UUID.randomUUID().toString();
+        taskStatuses.put(taskId, "PROCESSING");
+        REPORT_EXECUTOR.execute(() -> writeDowntimeReport(taskId, zeh, dateBegin, dateEnd));
+        return taskId;
+    }
 
+    public String getDowntimeStatus(String taskId) {
+        if (!isTaskId(taskId)) {
+            return "NOT_FOUND";
+        }
+        return taskStatuses.getOrDefault(taskId, "NOT_FOUND");
+    }
+
+    public File getDowntimeFile(String taskId) {
+        if (!isTaskId(taskId) || !"SUCCESS".equals(taskStatuses.get(taskId))) {
+            return null;
+        }
+        File file = new File(STORAGE_DIR, taskId + ".xls");
+        return file.isFile() ? file : null;
+    }
+
+    private void writeDowntimeReport(String taskId, Integer zeh, LocalDateTime dateBegin, LocalDateTime dateEnd) {
+        Path file = Paths.get(STORAGE_DIR, taskId + ".xls");
+        try {
+            Files.createDirectories(file.getParent());
+            try (Workbook workbook = generateDowntimeReportNew(zeh, dateBegin, dateEnd);
+                 OutputStream out = Files.newOutputStream(file)) {
+                workbook.write(out);
+            }
+            taskStatuses.put(taskId, "SUCCESS");
+        } catch (Exception e) {
+            log.error("Не удалось сформировать отчет простоев {}", taskId, e);
+            taskStatuses.put(taskId, "FAILED");
+            try {
+                Files.deleteIfExists(file);
+            } catch (IOException deleteError) {
+                log.warn("Не удалось удалить незавершенный отчет {}", file, deleteError);
+            }
+        }
+    }
+
+    private boolean isTaskId(String taskId) {
+        if (taskId == null) {
+            return false;
+        }
+        try {
+            UUID.fromString(taskId);
+            return true;
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
 }
 
 
