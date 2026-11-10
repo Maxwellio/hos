@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -27,21 +29,24 @@ public class ReportController {
     private final BrigadeMapper brigadeMapper;
     private final BrigadeService brigadeService;
     @GetMapping("/downtime")
-    public ResponseEntity<StreamingResponseBody> generateProstoiReport(
+    public ResponseEntity<byte[]> generateProstoiReport(
             @ModelAttribute DowntimeReportRequest value
-    ){
+    ) throws IOException {
       String filename = "downtime_report.xls";
-      StreamingResponseBody stream = outputStream -> {
-          try (Workbook workbook = reportService.generateDowntimeReportNew(value.getZeh(), value.getDateBegin(), value.getDateEnd())) {
-              workbook.write(outputStream);
-          }
-      };
+      // Книга собирается до ответа. В StreamingResponseBody эта работа попадала в async-таймаут и обрывалась 503.
+      byte[] body;
+      try (Workbook workbook = reportService.generateDowntimeReportNew(value.getZeh(), value.getDateBegin(), value.getDateEnd());
+           ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+          workbook.write(buffer);
+          body = buffer.toByteArray();
+      }
       return ResponseEntity.ok()
               .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\""+ filename + "\"")
               .header("Access-Control-Expose-Headers", "Content-Disposition")
               .header(HttpHeaders.CACHE_CONTROL, "public, max-age=3600")
               .contentType(MediaType.APPLICATION_OCTET_STREAM)
-              .body(stream);
+              .contentLength(body.length)
+              .body(body);
     };
 
     @GetMapping("/normz")

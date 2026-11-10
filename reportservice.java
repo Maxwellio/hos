@@ -298,27 +298,26 @@ public class ReportService {
         boldItalicRightAlignBaseStyle.setFont(boldItalicFont);
         boldItalicRightAlignBaseStyle.setAlignment(HorizontalAlignment.RIGHT);
 
+        Set<String> items = Set.of("1", "2", "3", "4", "5", "6.1", "6.2", "7");
         for (DowntimeReportDto element : report) {
             Row row = sheet.createRow(currentRow);
+            String repNum = element.getRep_PP_NUM();
             for (int i = 0; i <= 16; i++) {
                 Cell cell = row.createCell(ref.getCol() + i);
                 cell.setCellStyle(baseStyle);
-                if (Set.of(0, 1).contains(i)) {
+                if (i == 0 || i == 1) {
                     row.getCell(i).setCellStyle(leftAlignBaseStyle);
                 }
-                Set<String> items = Set.of("1", "2", "3", "4", "5", "6.1", "6.2", "7");
-                String repNum = element.getRep_PP_NUM();
-                if (items.contains(element.getRep_PP_NUM())){
-                    if (Set.of(0, 1).contains(i)){
+                if (items.contains(repNum)){
+                    if (i == 0 || i == 1){
                         cell.setCellStyle(boldLeftAlignBaseStyle);
                     } else {
                         cell.setCellStyle(boldBaseStyle);
                     }
                 }
-                if (Objects.equals(element.getRep_PP_NUM(), "") && i == 1){
+                if (Objects.equals(repNum, "") && i == 1){
                     row.getCell(i).setCellStyle(boldItalicRightAlignBaseStyle);
                 }
-                sheet.setActiveCell(cell.getAddress());
             }
             row.getCell(ref.getCol()).setCellValue(Objects.requireNonNullElse(element.getRep_PP_NUM(), ""));
             row.getCell(ref.getCol() + 1).setCellValue(Objects.requireNonNullElse(element.getNm(), ""));
