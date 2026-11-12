@@ -22,13 +22,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.time.temporal.TemporalAdjusters;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,11 +36,6 @@ public class ReportService {
     private final Map<String, String> taskStatuses = new ConcurrentHashMap<>();
     // Папка на сервере, где будут временно лежать готовые файлы
     private final String STORAGE_DIR = System.getProperty("java.io.tmpdir") + "/excel_reports/";
-    private static final ExecutorService REPORT_EXECUTOR = Executors.newFixedThreadPool(2, runnable -> {
-        Thread thread = new Thread(runnable, "downtime-report");
-        thread.setDaemon(true);
-        return thread;
-    });
 
     public List<SelectDto> getEquipmentList(){
         List<SelectDto> equipmentList =  new ArrayList<>();
@@ -308,26 +298,27 @@ public class ReportService {
         boldItalicRightAlignBaseStyle.setFont(boldItalicFont);
         boldItalicRightAlignBaseStyle.setAlignment(HorizontalAlignment.RIGHT);
 
-        Set<String> items = Set.of("1", "2", "3", "4", "5", "6.1", "6.2", "7");
         for (DowntimeReportDto element : report) {
             Row row = sheet.createRow(currentRow);
-            String repNum = element.getRep_PP_NUM();
             for (int i = 0; i <= 16; i++) {
                 Cell cell = row.createCell(ref.getCol() + i);
                 cell.setCellStyle(baseStyle);
-                if (i == 0 || i == 1) {
+                if (Set.of(0, 1).contains(i)) {
                     row.getCell(i).setCellStyle(leftAlignBaseStyle);
                 }
-                if (items.contains(repNum)){
-                    if (i == 0 || i == 1){
+                Set<String> items = Set.of("1", "2", "3", "4", "5", "6.1", "6.2", "7");
+                String repNum = element.getRep_PP_NUM();
+                if (items.contains(element.getRep_PP_NUM())){
+                    if (Set.of(0, 1).contains(i)){
                         cell.setCellStyle(boldLeftAlignBaseStyle);
                     } else {
                         cell.setCellStyle(boldBaseStyle);
                     }
                 }
-                if (Objects.equals(repNum, "") && i == 1){
+                if (Objects.equals(element.getRep_PP_NUM(), "") && i == 1){
                     row.getCell(i).setCellStyle(boldItalicRightAlignBaseStyle);
                 }
+                sheet.setActiveCell(cell.getAddress());
             }
             row.getCell(ref.getCol()).setCellValue(Objects.requireNonNullElse(element.getRep_PP_NUM(), ""));
             row.getCell(ref.getCol() + 1).setCellValue(Objects.requireNonNullElse(element.getNm(), ""));
@@ -1814,59 +1805,19 @@ public class ReportService {
         }
     }
 
-    public String startDowntimeReport(Integer zeh, LocalDateTime dateBegin, LocalDateTime dateEnd) {
-        String taskId = UUID.randomUUID().toString();
-        taskStatuses.put(taskId, "PROCESSING");
-        REPORT_EXECUTOR.execute(() -> writeDowntimeReport(taskId, zeh, dateBegin, dateEnd));
-        return taskId;
-    }
 
-    public String getDowntimeStatus(String taskId) {
-        if (!isTaskId(taskId)) {
-            return "NOT_FOUND";
-        }
-        return taskStatuses.getOrDefault(taskId, "NOT_FOUND");
-    }
-
-    public File getDowntimeFile(String taskId) {
-        if (!isTaskId(taskId) || !"SUCCESS".equals(taskStatuses.get(taskId))) {
-            return null;
-        }
-        File file = new File(STORAGE_DIR, taskId + ".xls");
-        return file.isFile() ? file : null;
-    }
-
-    private void writeDowntimeReport(String taskId, Integer zeh, LocalDateTime dateBegin, LocalDateTime dateEnd) {
-        Path file = Paths.get(STORAGE_DIR, taskId + ".xls");
-        try {
-            Files.createDirectories(file.getParent());
-            try (Workbook workbook = generateDowntimeReportNew(zeh, dateBegin, dateEnd);
-                 OutputStream out = Files.newOutputStream(file)) {
-                workbook.write(out);
-            }
-            taskStatuses.put(taskId, "SUCCESS");
-        } catch (Exception e) {
-            log.error("Не удалось сформировать отчет простоев {}", taskId, e);
-            taskStatuses.put(taskId, "FAILED");
-            try {
-                Files.deleteIfExists(file);
-            } catch (IOException deleteError) {
-                log.warn("Не удалось удалить незавершенный отчет {}", file, deleteError);
-            }
-        }
-    }
-
-    private boolean isTaskId(String taskId) {
-        if (taskId == null) {
-            return false;
-        }
-        try {
-            UUID.fromString(taskId);
-            return true;
-        } catch (IllegalArgumentException ex) {
-            return false;
-        }
-    }
+//    public String getStatus(String taskId) { // Метод для проверки статуса из контроллера
+//        return taskStatuses.getOrDefault(taskId, "NOT_FOUND");
+//    }
+//
+//    public File getGeneratedFile(String taskId) { // Метод для получения готового файла для скачивания
+//        return new File(STORAGE_DIR, taskId + ".xls");
+//    }
+//
+//    public void deleteGeneratedFile(String taskId) { // Метод для получения готового файла для скачивания
+//        File file = new File(STORAGE_DIR, taskId + ".xls");
+//        file.delete();
+//    }
 }
 
 
