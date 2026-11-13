@@ -1914,4 +1914,294 @@ select 54 as prnum,'5.6' Rep_PP_NUM,'Продавка водой в связи �
        sum(case when n.zakazchik=1 then coalesce(np.znach,0) else 0 end) SN,
        sum(case when n.zakazchik=2 then coalesce(np.znach,0) else 0 end) FN,
        sum(case when n.zakazchik=6 then coalesce(np.znach,0) else 0 end) LN,
-       sum(case when n.zakazchik=3 then coalesce(np.znach,0) else 0 end) B
+       sum(case when n.zakazchik=3 then coalesce(np.znach,0) else 0 end) BN,
+       sum(case when n.zakazchik=4 then coalesce(np.znach,0) else 0 end) KN,
+       sum(case when n.zakazchik=5 then coalesce(np.znach,0) else 0 end) NSN,
+       sum(case when n.zakazchik=10 then coalesce(np.znach,0) else 0 end) SUBR_1,
+       sum(case when n.zakazchik=11 then coalesce(np.znach,0) else 0 end) SUBR_2,
+       sum(case when n.zakazchik=12 then coalesce(np.znach,0) else 0 end) SUBR_3,
+       sum(case when n.zakazchik=7 then coalesce(np.znach,0) else 0 end) SUPNP,
+       sum(case when n.zakazchik=8 then coalesce(np.znach,0) else 0 end) FUPNP,
+       sum(case when n.zakazchik=9 then coalesce(np.znach,0) else 0 end) UPNP
+  from hos.defnar n
+  	   join hos.defnarvip dv on n.key = dv.narkey
+  	   join hos.prostoi_param np on n.key = np.keynar
+	   join hos.spr_prostoi p on p.id=np.param
+ where n.spr_org_id = 200
+   and n.closed = 1
+   and coalesce(n.zeh, 0) = (case when :ceh = 0 then coalesce(n.zeh, 0) else :ceh end)
+   and ((with recursive rec as (
+						 	select t.* from public.tematic_razdel t where t.id = n.razdel
+						 	union
+						 	select t.* from public.tematic_razdel t join rec on t.id = rec.parent_id and rec.id <> 1000242
+				    	)select id from rec where parent_id = 1000242) = (case when :tip = 0 then (with recursive rec as (
+																			  select t.* from public.tematic_razdel t where t.id = n.razdel
+																			  union
+																			  select t.* from public.tematic_razdel t join rec on t.id = rec.parent_id and rec.id <> 1000242
+																		  )select id from rec where parent_id = 1000242) else :tip end))
+   and p.id = 36
+   and date_trunc('month', dv.enddate) >= date_trunc('month', to_date(:dateBegin, 'DD.MM.YYYY'))
+   and date_trunc('month', dv.enddate) <= date_trunc('month', to_date(:dateEnd, 'DD.MM.YYYY'))
+UNION ALL
+select 55 as prnum,'5.7' Rep_PP_NUM,'Техническое обслуживание' nm,
+       'ч' as edizm,
+       sum(coalesce(np.znach,0)) VSEGO,
+       sum(case when coalesce(n.zakazchik,200)=200 then coalesce(np.znach,0) else 0 end) SNPH,
+       sum(case when n.zakazchik=1 then coalesce(np.znach,0) else 0 end) SN,
+       sum(case when n.zakazchik=2 then coalesce(np.znach,0) else 0 end) FN,
+       sum(case when n.zakazchik=6 then coalesce(np.znach,0) else 0 end) LN,
+       sum(case when n.zakazchik=3 then coalesce(np.znach,0) else 0 end) BN,
+       sum(case when n.zakazchik=4 then coalesce(np.znach,0) else 0 end) KN,
+       sum(case when n.zakazchik=5 then coalesce(np.znach,0) else 0 end) NSN,
+       sum(case when n.zakazchik=10 then coalesce(np.znach,0) else 0 end) SUBR_1,
+       sum(case when n.zakazchik=11 then coalesce(np.znach,0) else 0 end) SUBR_2,
+       sum(case when n.zakazchik=12 then coalesce(np.znach,0) else 0 end) SUBR_3,
+       sum(case when n.zakazchik=7 then coalesce(np.znach,0) else 0 end) SUPNP,
+       sum(case when n.zakazchik=8 then coalesce(np.znach,0) else 0 end) FUPNP,
+       sum(case when n.zakazchik=9 then coalesce(np.znach,0) else 0 end) UPNP
+  from hos.defnar n
+  	   join hos.defnarvip dv on n.key = dv.narkey
+  	   join hos.prostoi_param np on n.key = np.keynar
+	   join hos.spr_prostoi p on p.id=np.param
+ where n.spr_org_id = 200
+   and n.closed = 1
+   and coalesce(n.zeh, 0) = (case when :ceh = 0 then coalesce(n.zeh, 0) else :ceh end)
+   and ((with recursive rec as (
+						 	select t.* from public.tematic_razdel t where t.id = n.razdel
+						 	union
+						 	select t.* from public.tematic_razdel t join rec on t.id = rec.parent_id and rec.id <> 1000242
+				    	)select id from rec where parent_id = 1000242) = (case when :tip = 0 then (with recursive rec as (
+																			  select t.* from public.tematic_razdel t where t.id = n.razdel
+																			  union
+																			  select t.* from public.tematic_razdel t join rec on t.id = rec.parent_id and rec.id <> 1000242
+																		  )select id from rec where parent_id = 1000242) else :tip end))
+   and p.id = 37
+   and date_trunc('month', dv.enddate) >= date_trunc('month', to_date(:dateBegin, 'DD.MM.YYYY'))
+   and date_trunc('month', dv.enddate) <= date_trunc('month', to_date(:dateEnd, 'DD.MM.YYYY'))
+UNION ALL
+select 56 as prnum,'5.8' Rep_PP_NUM,'Ежесменное техническое обслуживание' nm,
+       'ч' as edizm,
+       sum(coalesce(np.znach,0)) VSEGO,
+       sum(case when coalesce(n.zakazchik,200)=200 then coalesce(np.znach,0) else 0 end) SNPH,
+       sum(case when n.zakazchik=1 then coalesce(np.znach,0) else 0 end) SN,
+       sum(case when n.zakazchik=2 then coalesce(np.znach,0) else 0 end) FN,
+       sum(case when n.zakazchik=6 then coalesce(np.znach,0) else 0 end) LN,
+       sum(case when n.zakazchik=3 then coalesce(np.znach,0) else 0 end) BN,
+       sum(case when n.zakazchik=4 then coalesce(np.znach,0) else 0 end) KN,
+       sum(case when n.zakazchik=5 then coalesce(np.znach,0) else 0 end) NSN,
+       sum(case when n.zakazchik=10 then coalesce(np.znach,0) else 0 end) SUBR_1,
+       sum(case when n.zakazchik=11 then coalesce(np.znach,0) else 0 end) SUBR_2,
+       sum(case when n.zakazchik=12 then coalesce(np.znach,0) else 0 end) SUBR_3,
+       sum(case when n.zakazchik=7 then coalesce(np.znach,0) else 0 end) SUPNP,
+       sum(case when n.zakazchik=8 then coalesce(np.znach,0) else 0 end) FUPNP,
+       sum(case when n.zakazchik=9 then coalesce(np.znach,0) else 0 end) UPNP
+  from hos.defnar n
+  	   join hos.defnarvip dv on n.key = dv.narkey
+  	   join hos.prostoi_param np on n.key = np.keynar
+	   join hos.spr_prostoi p on p.id=np.param
+ where n.spr_org_id = 200
+   and n.closed = 1
+   and coalesce(n.zeh, 0) = (case when :ceh = 0 then coalesce(n.zeh, 0) else :ceh end)
+   and ((with recursive rec as (
+						 	select t.* from public.tematic_razdel t where t.id = n.razdel
+						 	union
+						 	select t.* from public.tematic_razdel t join rec on t.id = rec.parent_id and rec.id <> 1000242
+				    	)select id from rec where parent_id = 1000242) = (case when :tip = 0 then (with recursive rec as (
+																			  select t.* from public.tematic_razdel t where t.id = n.razdel
+																			  union
+																			  select t.* from public.tematic_razdel t join rec on t.id = rec.parent_id and rec.id <> 1000242
+																		  )select id from rec where parent_id = 1000242) else :tip end))
+   and p.id = 44
+   and date_trunc('month', dv.enddate) >= date_trunc('month', to_date(:dateBegin, 'DD.MM.YYYY'))
+   and date_trunc('month', dv.enddate) <= date_trunc('month', to_date(:dateEnd, 'DD.MM.YYYY'))
+UNION ALL
+select 57 as prnum,'6.1' Rep_PP_NUM,'Холостой проезд по вине заказчика' nm,
+       'ч' as edizm,
+       sum(coalesce(np.znach,0)) VSEGO,
+       sum(case when coalesce(n.zakazchik,200)=200 then coalesce(np.znach,0) else 0 end) SNPH,
+       sum(case when n.zakazchik=1 then coalesce(np.znach,0) else 0 end) SN,
+       sum(case when n.zakazchik=2 then coalesce(np.znach,0) else 0 end) FN,
+       sum(case when n.zakazchik=6 then coalesce(np.znach,0) else 0 end) LN,
+       sum(case when n.zakazchik=3 then coalesce(np.znach,0) else 0 end) BN,
+       sum(case when n.zakazchik=4 then coalesce(np.znach,0) else 0 end) KN,
+       sum(case when n.zakazchik=5 then coalesce(np.znach,0) else 0 end) NSN,
+       sum(case when n.zakazchik=10 then coalesce(np.znach,0) else 0 end) SUBR_1,
+       sum(case when n.zakazchik=11 then coalesce(np.znach,0) else 0 end) SUBR_2,
+       sum(case when n.zakazchik=12 then coalesce(np.znach,0) else 0 end) SUBR_3,
+       sum(case when n.zakazchik=7 then coalesce(np.znach,0) else 0 end) SUPNP,
+       sum(case when n.zakazchik=8 then coalesce(np.znach,0) else 0 end) FUPNP,
+       sum(case when n.zakazchik=9 then coalesce(np.znach,0) else 0 end) UPNP
+  from hos.defnar n
+  	   join hos.defnarvip dv on n.key = dv.narkey
+  	   join hos.prostoi_param np on n.key = np.keynar
+	   join hos.spr_prostoi p on p.id=np.param
+ where n.spr_org_id = 200
+   and n.closed = 1
+   and coalesce(n.zeh, 0) = (case when :ceh = 0 then coalesce(n.zeh, 0) else :ceh end)
+   and ((with recursive rec as (
+						 	select t.* from public.tematic_razdel t where t.id = n.razdel
+						 	union
+						 	select t.* from public.tematic_razdel t join rec on t.id = rec.parent_id and rec.id <> 1000242
+				    	)select id from rec where parent_id = 1000242) = (case when :tip = 0 then (with recursive rec as (
+																			  select t.* from public.tematic_razdel t where t.id = n.razdel
+																			  union
+																			  select t.* from public.tematic_razdel t join rec on t.id = rec.parent_id and rec.id <> 1000242
+																		  )select id from rec where parent_id = 1000242) else :tip end))
+   and p.id = 18
+   and date_trunc('month', dv.enddate) >= date_trunc('month', to_date(:dateBegin, 'DD.MM.YYYY'))
+   and date_trunc('month', dv.enddate) <= date_trunc('month', to_date(:dateEnd, 'DD.MM.YYYY'))
+UNION ALL
+select 58 as prnum,'6.2' Rep_PP_NUM,'Холостой проезд по вине СНПХ' nm,
+       'ч' as edizm,
+       sum(coalesce(np.znach,0)) VSEGO,
+       sum(case when coalesce(n.zakazchik,200)=200 then coalesce(np.znach,0) else 0 end) SNPH,
+       sum(case when n.zakazchik=1 then coalesce(np.znach,0) else 0 end) SN,
+       sum(case when n.zakazchik=2 then coalesce(np.znach,0) else 0 end) FN,
+       sum(case when n.zakazchik=6 then coalesce(np.znach,0) else 0 end) LN,
+       sum(case when n.zakazchik=3 then coalesce(np.znach,0) else 0 end) BN,
+       sum(case when n.zakazchik=4 then coalesce(np.znach,0) else 0 end) KN,
+       sum(case when n.zakazchik=5 then coalesce(np.znach,0) else 0 end) NSN,
+       sum(case when n.zakazchik=10 then coalesce(np.znach,0) else 0 end) SUBR_1,
+       sum(case when n.zakazchik=11 then coalesce(np.znach,0) else 0 end) SUBR_2,
+       sum(case when n.zakazchik=12 then coalesce(np.znach,0) else 0 end) SUBR_3,
+       sum(case when n.zakazchik=7 then coalesce(np.znach,0) else 0 end) SUPNP,
+       sum(case when n.zakazchik=8 then coalesce(np.znach,0) else 0 end) FUPNP,
+       sum(case when n.zakazchik=9 then coalesce(np.znach,0) else 0 end) UPNP
+  from hos.defnar n
+  	   join hos.defnarvip dv on n.key = dv.narkey
+  	   join hos.prostoi_param np on n.key = np.keynar
+	   join hos.spr_prostoi p on p.id=np.param
+ where n.spr_org_id = 200
+   and n.closed = 1
+   and coalesce(n.zeh, 0) = (case when :ceh = 0 then coalesce(n.zeh, 0) else :ceh end)
+   and ((with recursive rec as (
+						 	select t.* from public.tematic_razdel t where t.id = n.razdel
+						 	union
+						 	select t.* from public.tematic_razdel t join rec on t.id = rec.parent_id and rec.id <> 1000242
+				    	)select id from rec where parent_id = 1000242) = (case when :tip = 0 then (with recursive rec as (
+																			  select t.* from public.tematic_razdel t where t.id = n.razdel
+																			  union
+																			  select t.* from public.tematic_razdel t join rec on t.id = rec.parent_id and rec.id <> 1000242
+																		  )select id from rec where parent_id = 1000242) else :tip end))
+   and p.id = 41
+   and date_trunc('month', dv.enddate) >= date_trunc('month', to_date(:dateBegin, 'DD.MM.YYYY'))
+   and date_trunc('month', dv.enddate) <= date_trunc('month', to_date(:dateEnd, 'DD.MM.YYYY'))
+UNION ALL
+select 59 as prnum,'' Rep_PP_NUM,'удел. вес в общем количестве' nm,
+       '%' as edizm,
+       100 VSEGO,
+       round(sum(case when coalesce(n.zakazchik,200)=200 then coalesce(np.znach,0) else 0 end)/(case when sum(coalesce(np.znach, 0)) =0 then 1 else sum(coalesce(np.znach,0))end)*100, 2) SNPH,
+       round(sum(case when n.zakazchik=1 then coalesce(np.znach,0) else 0 end)/(case when sum(coalesce(np.znach, 0)) =0 then 1 else sum(coalesce(np.znach,0))end)*100, 2) SN,
+       round(sum(case when n.zakazchik=2 then coalesce(np.znach,0) else 0 end)/(case when sum(coalesce(np.znach, 0)) =0 then 1 else sum(coalesce(np.znach,0))end)*100, 2) FN,
+       round(sum(case when n.zakazchik=6 then coalesce(np.znach,0) else 0 end)/(case when sum(coalesce(np.znach, 0)) =0 then 1 else sum(coalesce(np.znach,0))end)*100, 2) LN,
+       round(sum(case when n.zakazchik=3 then coalesce(np.znach,0) else 0 end)/(case when sum(coalesce(np.znach, 0)) =0 then 1 else sum(coalesce(np.znach,0))end)*100, 2) BN,
+       round(sum(case when n.zakazchik=4 then coalesce(np.znach,0) else 0 end)/(case when sum(coalesce(np.znach, 0)) =0 then 1 else sum(coalesce(np.znach,0))end)*100, 2) KN,
+       round(sum(case when n.zakazchik=5 then coalesce(np.znach,0) else 0 end)/(case when sum(coalesce(np.znach, 0)) =0 then 1 else sum(coalesce(np.znach,0))end)*100, 2) NSN,
+       round(sum(case when n.zakazchik=10 then coalesce(np.znach,0) else 0 end)/(case when sum(coalesce(np.znach, 0)) =0 then 1 else sum(coalesce(np.znach,0))end)*100, 2) SUBR_1,
+       round(sum(case when n.zakazchik=11 then coalesce(np.znach,0) else 0 end)/(case when sum(coalesce(np.znach, 0)) =0 then 1 else sum(coalesce(np.znach,0))end)*100, 2) SUBR_2,
+       round(sum(case when n.zakazchik=12 then coalesce(np.znach,0) else 0 end)/(case when sum(coalesce(np.znach, 0)) =0 then 1 else sum(coalesce(np.znach,0))end)*100, 2) SUBR_3,
+       round(sum(case when n.zakazchik=7 then coalesce(np.znach,0) else 0 end)/(case when sum(coalesce(np.znach, 0)) =0 then 1 else sum(coalesce(np.znach,0))end)*100, 2) SUPNP,
+       round(sum(case when n.zakazchik=8 then coalesce(np.znach,0) else 0 end)/(case when sum(coalesce(np.znach, 0)) =0 then 1 else sum(coalesce(np.znach,0))end)*100, 2) FUPNP,
+       round(sum(case when n.zakazchik=9 then coalesce(np.znach,0) else 0 end)/(case when sum(coalesce(np.znach, 0)) =0 then 1 else sum(coalesce(np.znach,0))end)*100, 2) UPNP
+  from hos.defnar n
+  	   join hos.defnarvip dv on n.key = dv.narkey
+  	   join hos.prostoi_param np on n.key = np.keynar
+	   join hos.spr_prostoi p on p.id=np.param
+ where n.spr_org_id = 200
+   and n.closed = 1
+   and coalesce(n.zeh, 0) = (case when :ceh = 0 then coalesce(n.zeh, 0) else :ceh end)
+   and ((with recursive rec as (
+						 	select t.* from public.tematic_razdel t where t.id = n.razdel
+						 	union
+						 	select t.* from public.tematic_razdel t join rec on t.id = rec.parent_id and rec.id <> 1000242
+				    	)select id from rec where parent_id = 1000242) = (case when :tip = 0 then (with recursive rec as (
+																			  select t.* from public.tematic_razdel t where t.id = n.razdel
+																			  union
+																			  select t.* from public.tematic_razdel t join rec on t.id = rec.parent_id and rec.id <> 1000242
+																		  )select id from rec where parent_id = 1000242) else :tip end))
+   and p.id = 18
+   and date_trunc('month', dv.enddate) >= date_trunc('month', to_date(:dateBegin, 'DD.MM.YYYY'))
+   and date_trunc('month', dv.enddate) <= date_trunc('month', to_date(:dateEnd, 'DD.MM.YYYY'))
+UNION ALL
+select 60 as prnum,'7' Rep_PP_NUM,'Внутрисменные простои по видам техники' nm,NULL as edizm,NULL as VSEGO,NULL as SNPH,NULL as SN,NULL as FN,
+NULL as LN,NULL as BN,NULL as KN,NULL as NSN,NULL as SUBR_1,NULL as SUBR_2,NULL as SUBR_3,NULL as SUPNP,NULL as FUPNP,NULL as UPNP
+
+UNION ALL
+select (case
+                   when tipid = 1018281
+         then 61
+       when tipid = 1019237
+         then 62
+       when tipid = 1019540
+         then 63
+       when tipid = 1019385
+         then 64
+       when tipid = 1018865
+         then 65
+                  end) as prnum,
+                   (case
+                   when tipid = 1018281
+         then '7.1'
+       when tipid = 1019237
+         then '7.2'
+       when tipid = 1019540
+         then '7.3'
+       when tipid = 1019385
+         then '7.4'
+       when tipid = 1018865
+         then '7.5'
+                  end) Rep_PP_NUM,
+                   nm,
+                   'ч' as edizm,
+       sum(coalesce(t.znach,0)) VSEGO,
+       sum(case when coalesce(t.zakazchik,200)=200 then coalesce(t.znach,0) else 0 end) SNPH,
+       sum(case when t.zakazchik=1 then coalesce(t.znach,0) else 0 end) SN,
+       sum(case when t.zakazchik=2 then coalesce(t.znach,0) else 0 end) FN,
+       sum(case when t.zakazchik=6 then coalesce(t.znach,0) else 0 end) LN,
+       sum(case when t.zakazchik=3 then coalesce(t.znach,0) else 0 end) BN,
+       sum(case when t.zakazchik=4 then coalesce(t.znach,0) else 0 end) KN,
+       sum(case when t.zakazchik=5 then coalesce(t.znach,0) else 0 end) NSN,
+       sum(case when t.zakazchik=10 then coalesce(t.znach,0) else 0 end) SUBR_1,
+       sum(case when t.zakazchik=11 then coalesce(t.znach,0) else 0 end) SUBR_2,
+       sum(case when t.zakazchik=12 then coalesce(t.znach,0) else 0 end) SUBR_3,
+       sum(case when t.zakazchik=7 then coalesce(t.znach,0) else 0 end) SUPNP,
+       sum(case when t.zakazchik=8 then coalesce(t.znach,0) else 0 end) FUPNP,
+       sum(case when t.zakazchik=9 then coalesce(t.znach,0) else 0 end) UPNP
+from (select
+                    tk.id as tipid, tk.nm,
+                               n.zakazchik,
+                               n.znach
+
+  from (select n1.*, np.znach, dv.enddate,
+          (with recursive rec as (
+                                  select t.* from public.tematic_razdel t where t.id = n1.razdel
+                                  union
+                                  select t.* from public.tematic_razdel t join rec on t.id = rec.parent_id and rec.id <> 1000242
+                                  )
+                                  select id from rec where parent_id = 1000242) defnar_razdel
+
+          from  hos.defnar n1
+		   join hos.defnarvip dv on n1.key = dv.narkey
+           join hos.prostoi_param np on n1.key = np.keynar
+           join hos.spr_prostoi p on p.id=np.param
+
+ where n1.spr_org_id = 200
+   and n.closed = 1
+   and coalesce(n1.zeh, 0) = (case when :ceh = 0 then coalesce(n1.zeh, 0) else :ceh end)
+
+   and date_trunc('month', dv.enddate) >= date_trunc('month', to_date(:dateBegin, 'DD.MM.YYYY'))
+   and date_trunc('month', dv.enddate) <= date_trunc('month', to_date(:dateEnd, 'DD.MM.YYYY'))
+    ) n
+
+                   right join (                 select 1018281 id, 'ЦА-320' nm
+                                                union
+                                                select 1019237 id, 'KENWORTH' nm
+                                                union
+                                                select 1019540 id, 'MAN' nm
+                                                union
+                                                select 1019385 id, 'УНП2' nm
+                                                union
+                                                select 1018865 id, 'УНЦ' nm) tk on tk.id = n.defnar_razdel
+
+
+) t group by tipid, nm) qr order by prnum
